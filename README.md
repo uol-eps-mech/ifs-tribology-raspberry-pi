@@ -8,6 +8,12 @@ TODO Add more about the variants used.
 
 TODO Add list of machines and Pis that can be used.
 
+## Setup and testing
+
+To setup the RPi software, see [this document](setup_rpi.md).
+
+There are some notes on testing the final boxes [here](testing.md).
+
 ## License
 
 This work is licensed under the MIT licence.  See LICENSE file for details.

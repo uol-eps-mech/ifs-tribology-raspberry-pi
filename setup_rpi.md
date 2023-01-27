@@ -1,5 +1,3 @@
-# Set up the Raspberry Pi
-
 # Raspberry Pi Set Up
 
 How to setup the Raspberry Pi 4 to use the ADC6Click board.
@@ -22,7 +20,7 @@ Insert the SD card into the Raspberry Pi, make sure a keyboard, mouse and and HD
 
 1. Press `Next`.
 2. Set Country.  The default options are for the UK so I left them alone. Press `Next`.
-3. Enter a new password, then press `Next`.
+3. Enter a new user name (pi) and password, then press `Next`.
 4. Set the screen black bars option as appropriate. Press `Next`.
 5. Connect to Wi-Fi.  If you are at the University and connecting to Eduroam, press `Skip`.  Otherwise, select the Wi-Fi and press `Next`.  Then enter the Wi-Fi password and press `Next`.
 6. Update Software.  Press `Skip` if no Wi-Fi, or `Next` to update.  The software update will take an hour or so, so I prefer to skip this step and do the update later.
@@ -81,6 +79,4 @@ After restarting, we need to start customising our Pi.
 
 ## Eduroam
 
-This is not as easy as it could be!
-
-Fill in details!
+This is documented [here](https://github.com/RealRobotics/rpi-kb/blob/main/eduroam/eduroam.md).
