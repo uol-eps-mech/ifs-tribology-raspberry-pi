@@ -1,10 +1,15 @@
-# IFS Tribology Lab Raspberry Pi Setup and Usage
+# IFS Tribology Lab Raspberry Pi Data Logger
 
 Information about setting up and using Raspberry Pis in the Tribology lab.
 
-Raspberry Pi 4Bs are used for all of the machines in the Tribology lab and most are setup the same way.
+Raspberry Pi 4Bs are used for most of the machines in the Tribology lab and most are setup the same way.
 
-TODO Add more about the variants used.
+Type A and Type B variants have
+
+* 2 x BNC connectors for +/-10V voltage inputs.
+* 2 x K type thermocouple inputs.
+
+In addition, the type A has a 9 way D-Sub for monitoring the rotational speed reported by the pendulum tribometer.
 
 TODO Add list of machines and Pis that can be used.
 
