@@ -1,6 +1,34 @@
 # Raspberry Pi Set Up
 
-How to setup the Raspberry Pi 4 to use the ADC6Click board.
+How to setup the Raspberry Pi 4.
+
+## Use the pre-built image
+
+This is by far the quickest way.  The current image has all (except Eduroam) of the below ready to go an install in about 5 minutes.  The image file can be installed as follows:
+
+### Pre-requisites
+
+1. IMPORTANT. You need a PC that is not locked down by IT as you need Admin privileges to write to an SD card.  I use a laptop running Kubuntu.
+2. The image file and copy somewhere on your PC that you can find easily.  The latest image file can be obtained from Andy Blight.
+3. The Raspberry Imager software installed and ready to use.  Get it from: <https://www.raspberrypi.com/software/>
+4. A micro SD card to install the OS on. The cards we use are SanDisk Extreme A2 64 GB.  The fast speeds are important when running on a Raspberry Pi.
+
+### Installation
+
+These instructions were run on Kubuntu 22.04LTS.
+
+1. Insert the micro SD card into you PC.  You may need an SD to micro SD card adapter.
+2. Open the Raspberry Pi Imager program.
+3. Click on the `Operating System` button.
+4. Scroll to the bottom of the list and click on `Use custom`.
+5. Navigate to the place you stored the image file, select it and press `Open`.
+6. Press the `Storage` button.
+7. Click on the SD card to use.
+8. Press the `Write` button.
+9. Press `Yes` when the next dialog box comes up.
+10. Enter your PC password when prompted.
+11. The imager program will then write the image to the card, verify the image.  This takes a few minutes.
+12. When complete, a dialog pops up to tell you to remove the SD card, so do it and you're done!
 
 ## Download and install the OS
 
@@ -80,3 +108,7 @@ After restarting, we need to start customising our Pi.
 ## Eduroam
 
 This is documented [here](https://github.com/RealRobotics/rpi-kb/blob/main/eduroam/eduroam.md).
+
+## Setup software for the MCC DAQ cards
+
+The MCC
