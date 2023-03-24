@@ -11,13 +11,13 @@ Type A and Type B variants have
 
 In addition, the type A has a 9 way D-Sub for monitoring the rotational speed reported by the pendulum tribometer.
 
-TODO Add list of machines and Pis that can be used.
-
 ## Setup and testing
 
 To setup the RPi software, see [this document](setup_rpi.md).
 
 There are some notes on testing the final boxes [here](testing.md).
+
+There are some notes and photos on how they are put together [here](construction/construction.md).
 
 ## License
 
