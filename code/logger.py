@@ -1,15 +1,23 @@
 #!/usr/bin/env python3
+
+""" A program that logs data from the Pendulum Tribometer.
+    Currently only supports a single channel, channel 0.
+"""
+
+import math
 import os
 import time
 import random
 from datetime import datetime
+
+# from daqhats import hat_list, HatIDs, mcc118
 
 # The interval between each reading in milliseconds.
 INTERVAL_MS = 100
 DATA_FILENAME = "data.csv"
 # Output format. 1 for CSV else 0.
 OUTPUT_FORMAT_CSV = 1
-
+CSV_HEADER_STRING = "Time,RPM,Voltage,Angle Degrees,Coefficient of friction\n"
 
 class FakeMCC118DAQ:
     """A fake version of the MCC-118 DAQ class that returns a value with some
@@ -19,7 +27,7 @@ class FakeMCC118DAQ:
     def __init__(self):
         pass
 
-    def get(self, channel):
+    def get_reading(self, channel):
         """Return a value simulating a voltage.
         Each channel has a different central voltage.
         """
@@ -27,7 +35,38 @@ class FakeMCC118DAQ:
             value = 1.0 + random.random()
         elif channel == 1:
             value = 2.0 + random.random()
-        return value
+        # Convert reading into a tuple of values.
+        # Value taken from the difference at 0
+        voltage = value + 0.3
+        # Calibration value taken experimentally from the pendulum.
+        angle_DEG = (voltage) * 9.5
+        angle_RAD = (angle_DEG * 3.14159265) / 180
+        # Processing angle data to Friction data
+        coefficient_of_friction = abs(math.sin(angle_RAD)) / (math.tan(1.0472))
+        return (voltage, angle_DEG, coefficient_of_friction)
+
+
+# class MCC118DAQ:
+#     """Provides functions to use the MCC-118 DAQ hat."""
+
+#     def __init__(self):
+#         self.board = None
+#         self.board_list = hat_list(filter_by_id = HatIDs.ANY)
+#         if not self.board_list:
+#             print ("No boards found")
+#             sys.exit()
+#         else:
+#             for entry in self.board_list:
+#                 if entry.id == HatIDs.MCC_118:
+#                     self.board = mcc118(entry.address)
+#                     break
+
+#     def get(self, channel):
+#         """Return the voltage in Volts for the given channel."""
+#         voltage_v = 0.0
+#         if channel == 0 or channel == 1:
+#             voltage_v = -1.0 * self.board.a_in_read(channel)
+#         return voltage_v
 
 
 class Encoder:
@@ -49,27 +88,20 @@ class Logger:
         self._daq = FakeMCC118DAQ()
         self._running = True
 
-    def _voltage_to_friction(self, voltage):
-        # TODO some clever conversion.
-        return voltage
-
     def _get_formatted_output(self):
         # Get data.
-        voltage_0 = self._daq.get(0)
-        friction_0 = self._voltage_to_friction(voltage_0)
-        voltage_1 = self._daq.get(1)
-        friction_1 = self._voltage_to_friction(voltage_1)
+        voltage, angle_DEG, coefficient_of_friction = self._daq.get_reading(0)
         rpm = self._encoder.get()
         now = datetime.now()
         now_string = now.strftime("%H:%M:%S.%f")
         # Create formatted string.
         if OUTPUT_FORMAT_CSV == 0:
-            output_string = "{}: RPM: {}, Angle 1: {}, Angle 2: {}\n".format(
-                now_string, rpm, friction_0, friction_1
+            output_string = "{}: RPM: {}, Voltage {}, Angle degrees: {}, Coefficient of friction {}\n".format(
+                now_string, rpm, voltage, angle_DEG, coefficient_of_friction
             )
         else:
-            output_string = "{},{},{},{}\n".format(
-                now_string, rpm, friction_0, friction_1
+            output_string = "{},{},{},{},{}\n".format(
+                now_string, rpm, voltage, angle_DEG, coefficient_of_friction
             )
         # Debug. Can comment out if annoying.
         print(output_string)
@@ -79,9 +111,8 @@ class Logger:
         with open(filename, "w") as logger_file:
             if OUTPUT_FORMAT_CSV == 1:
                 # Write header.
-                header_string = "Time,RPM,Angle 1,Angle 2\n"
-                print(header_string)
-                logger_file.write(header_string)
+                print(CSV_HEADER_STRING)
+                logger_file.write(CSV_HEADER_STRING)
             try:
                 while True:
                     output_string = self._get_formatted_output()
