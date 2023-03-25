@@ -14,18 +14,17 @@ class GraphPlotter:
         # Used to stop the plot.
         self.pause = False
         # The graph.
-        self.graph = plt.figure()
-        self.graph.tight_layout()
-        self.ax = self.graph.add_subplot(111)
+        self.figure = plt.figure()
+        self.figure.tight_layout()
+        self.ax = self.figure.add_subplot(111)
+        self.line, = self.ax.plot([], [], 'bo', ms=10)
         self.ax.set_ylim(-1, 1)
         self.ax.set_xlim(0, 10)
         # prints running simulation time
         self.time_template = "Time = %.1f s"
         self.time_text = self.ax.text(0.05, 0.9, "", transform=self.ax.transAxes)
-        # Animating the graph to update for every new data set
-        self.animation = FuncAnimation(
-            self.graph, self.simPoints, self.simData, blit=False, interval=10, repeat=True
-        )
+        self.animation = None
+        self.paused = False
 
     def simData(self):
         # this function is called as the argument for
@@ -50,18 +49,28 @@ class GraphPlotter:
         x, t = simData[0], simData[1]
         self.time_text.set_text(self.time_template % (t))
         self.line.set_data(t, x)
+        print("data: line {}, text {}".format(self.line, self.time_text))
         return self.line, self.time_text
 
 
     def run(self):
         """Start the plotting thread"""
-        self.graph.show()
+        print("Called show()")
+        # Animating the graph to update for every new data set
+        self.animation = FuncAnimation(
+            self.figure, self.simPoints, self.simData, blit=False, interval=10, repeat=True
+        )
+        self.animation.ion()
+        self.paused = False
+        while not self.paused:
+            self.animation.show()
+            time.sleep(0.1)
+        print("exited run loop")
+        self.event_source.stop()
 
-    def start(self):
-        self.animation.start()
-
-    def stop(self):
-        self.animation.stop()
+    def pause(self, pause):
+        print("Called pause()")
+        self.paused = True
 
 
 graph_plotter = GraphPlotter()

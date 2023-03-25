@@ -19,6 +19,8 @@ There are some notes on testing the final boxes [here](testing.md).
 
 There are some notes and photos on how they are put together [here](construction/construction.md).
 
+I also wrote some [design notes](design.md).
+
 ## License
 
 This work is licensed under the MIT licence.  See LICENSE file for details.
