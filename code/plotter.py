@@ -50,7 +50,7 @@ def update_plot(_):
     try:
         line = get_line(gDataFilename)
         print("Line: '{}'".format(line))
-        split_line = line.split()
+        split_line = line.split(",")
         print("Split Line: {}, '{}'".format(len(split_line), split_line))
         if len(split_line) > 1:
             # Only plot time [0] and coefficient of friction [4].
