@@ -12,8 +12,8 @@ from argparse import ArgumentParser
 
 # from daqhats import hat_list, HatIDs, mcc118
 
-# The interval between each reading in milliseconds.
-INTERVAL_MS = 100
+# The interval between each reading in seconds.
+INTERVAL_S = 0.1
 CSV_HEADER_STRING = "Time,RPM,Voltage,Angle Degrees,Coefficient of friction\n"
 
 
@@ -102,7 +102,7 @@ class Logger:
         print(output_string)
         return output_string
 
-    def run(self, filename, interval_ms):
+    def run(self, filename, interval_s):
         with open(filename, "w") as logger_file:
             # Write header.
             print(CSV_HEADER_STRING)
@@ -113,7 +113,7 @@ class Logger:
                     logger_file.write(output_string)
                     # Make sure the data are written immediately.
                     logger_file.flush()
-                    time.sleep(interval_ms / 1000)
+                    time.sleep(interval_s)
             except KeyboardInterrupt:
                 print("Stopped by user")
 
@@ -127,7 +127,7 @@ def get_args():
 def main():
     args = get_args()
     logger = Logger()
-    logger.run(args.filename, INTERVAL_MS)
+    logger.run(args.filename, INTERVAL_S)
     os.sync()
 
 
