@@ -9,7 +9,6 @@ import os
 import time
 import random
 from argparse import ArgumentParser
-from datetime import datetime
 
 # from daqhats import hat_list, HatIDs, mcc118
 
@@ -86,16 +85,18 @@ class Logger:
         self._encoder = Encoder()
         self._daq = FakeMCC118DAQ()
         self._running = True
+        # Record start epoch time.
+        self._start_time = time.time()
 
     def _get_formatted_output(self):
         # Get data.
         voltage, angle_DEG, coefficient_of_friction = self._daq.get_reading(0)
         rpm = self._encoder.get()
-        now = datetime.now()
-        now_string = now.strftime("%H:%M:%S.%f")
+        # Get the time since program started in seconds.
+        duration = time.time() - self._start_time
         # Create formatted string.
-        output_string = "{},{:.3f},{:.3f},{:.3f},{:.3f}\n".format(
-            now_string, rpm, voltage, angle_DEG, coefficient_of_friction
+        output_string = "{:.3f},{:.3f},{:.3f},{:.3f},{:.3f}\n".format(
+            duration, rpm, voltage, angle_DEG, coefficient_of_friction
         )
         # Debug. Can comment out if annoying.
         print(output_string)
