@@ -8,16 +8,15 @@ import math
 import os
 import time
 import random
+from argparse import ArgumentParser
 from datetime import datetime
 
 # from daqhats import hat_list, HatIDs, mcc118
 
 # The interval between each reading in milliseconds.
 INTERVAL_MS = 100
-DATA_FILENAME = "data.csv"
-# Output format. 1 for CSV else 0.
-OUTPUT_FORMAT_CSV = 1
 CSV_HEADER_STRING = "Time,RPM,Voltage,Angle Degrees,Coefficient of friction\n"
+
 
 class FakeMCC118DAQ:
     """A fake version of the MCC-118 DAQ class that returns a value with some
@@ -95,24 +94,18 @@ class Logger:
         now = datetime.now()
         now_string = now.strftime("%H:%M:%S.%f")
         # Create formatted string.
-        if OUTPUT_FORMAT_CSV == 0:
-            output_string = "{}: RPM: {}, Voltage {}, Angle degrees: {}, Coefficient of friction {}\n".format(
-                now_string, rpm, voltage, angle_DEG, coefficient_of_friction
-            )
-        else:
-            output_string = "{},{},{},{},{}\n".format(
-                now_string, rpm, voltage, angle_DEG, coefficient_of_friction
-            )
+        output_string = "{},{:.3f},{:.3f},{:.3f},{:.3f}\n".format(
+            now_string, rpm, voltage, angle_DEG, coefficient_of_friction
+        )
         # Debug. Can comment out if annoying.
         print(output_string)
         return output_string
 
     def run(self, filename, interval_ms):
         with open(filename, "w") as logger_file:
-            if OUTPUT_FORMAT_CSV == 1:
-                # Write header.
-                print(CSV_HEADER_STRING)
-                logger_file.write(CSV_HEADER_STRING)
+            # Write header.
+            print(CSV_HEADER_STRING)
+            logger_file.write(CSV_HEADER_STRING)
             try:
                 while True:
                     output_string = self._get_formatted_output()
@@ -122,9 +115,16 @@ class Logger:
                 print("Stopped by user")
 
 
+def get_args():
+    parser = ArgumentParser()
+    parser.add_argument("filename", help="write report to FILE", metavar="FILE")
+    return parser.parse_args()
+
+
 def main():
+    args = get_args()
     logger = Logger()
-    logger.run(DATA_FILENAME, INTERVAL_MS)
+    logger.run(args.filename, INTERVAL_MS)
     os.sync()
 
 
