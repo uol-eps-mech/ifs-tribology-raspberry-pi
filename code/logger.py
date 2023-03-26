@@ -110,6 +110,8 @@ class Logger:
                 while True:
                     output_string = self._get_formatted_output()
                     logger_file.write(output_string)
+                    # Make sure the data are written immediately.
+                    logger_file.flush()
                     time.sleep(interval_ms / 1000)
             except KeyboardInterrupt:
                 print("Stopped by user")

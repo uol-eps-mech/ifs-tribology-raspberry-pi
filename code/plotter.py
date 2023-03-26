@@ -1,62 +1,110 @@
 #!/usr/bin/env python3
 
+""" Plots the latest data from the logger script.
+Based on these tutorials.
+https://matplotlib.org/stable/tutorials/introductory/lifecycle.html
+https://matplotlib.org/stable/tutorials/intermediate/tight_layout_guide.html
+and these answers:
+https://stackoverflow.com/questions/72697369/real-time-data-plotting-from-a-high-throughput-source
+https://stackoverflow.com/questions/3290292/read-from-a-log-file-as-its-being-written-using-python
+"""
+
 import time
 import io
 import matplotlib.pyplot as plt
 from matplotlib.animation import FuncAnimation
+from argparse import ArgumentParser
+
+PLOT_SIZE_LIMIT = 20
+FONT_SIZE = 12
+
+# File name.
+gDataFilename = ""
+# Data to plot.
+gFigure = None
+gAxes = None
+gPlotTime = []
+gPlotFriction = []
 
 
-BUFFER_LEN = 64
-DATA_FILENAME = "data.txt"
-PLOT_LIMIT = 20
-ANIM_FILENAME = "video.gif"
-
-
-fig, ax = plt.subplots(1, 1, figsize=(10,8))
-ax.set_title("Plot of random numbers from `gen.py`")
-ax.set_xlabel("time / s")
-ax.set_ylabel("random number / #")
-ax.set_ylim([0, 1])
-
-
-def get_data(filename, buffer_len, delay=0.0):
+def get_line(filename: str) -> str:
+    line = ""
     with open(filename, "r") as f:
+        # Go to the end of the file.
         f.seek(0, io.SEEK_END)
-        data = f.read(buffer_len)
-        if delay:
-            time.sleep(delay)
-    return data
+        while True:
+            line = f.readline()
+            # If line
+            if line:
+                break
+            else:
+                # wait a while and try again.
+                time.sleep(0.1)
+    return line
 
 
-def animate(i, xs, ys, limit=PLOT_LIMIT, verbose=False):
+# The parameter is a frame count that we don't use.
+def update_plot(_):
+    global gDataFilename, gAxes, gPlotTime, gPlotFriction
     # grab the data
     try:
-        data = get_data(DATA_FILENAME, BUFFER_LEN)
-        if verbose:
-            print(data)
-        x, y = map(float, data.split())
-        if x > xs[-1]:
-            # Add x and y to lists
-            xs.append(x)
-            ys.append(y)
-            # Limit x and y lists to 10 items
-            xs = xs[-limit:]
-            ys = ys[-limit:]
+        line = get_line(gDataFilename)
+        print("Line: '{}'".format(line))
+        split_line = line.split()
+        print("Split Line: {}, '{}'".format(len(split_line), split_line))
+        if len(split_line) > 1:
+            # Only plot time [0] and coefficient of friction [4].
+            gPlotTime.append(split_line[0])
+            gPlotFriction.append(split_line[4])
+            # Limit size of lists.
+            gPlotTime = gPlotTime[-PLOT_SIZE_LIMIT:]
+            gPlotFriction = gPlotFriction[-PLOT_SIZE_LIMIT:]
         else:
             print(f"W: {time.time()} :: STALE!")
     except ValueError:
         print(f"W: {time.time()} :: EXCEPTION!")
     else:
-        # Draw x and y lists
-        ax.clear()
-        ax.set_ylim([0, 1])
-        ax.plot(xs, ys)
+        # Plot the two lists on the figure.
+        gAxes.plot(gPlotTime, gPlotFriction)
 
 
-# show interactively
-print("Starting animation.")
-anim = FuncAnimation(fig, animate, fargs=([time.time()], [None]), interval=1)
-plt.show()
-print("After show.")
-plt.close()
-print("Done.")
+def start_plotting():
+    global gFigure, gAxes
+    # Set style
+    plt.style.use("fivethirtyeight")
+
+    # Set up figure and axes.
+    gFigure, gAxes = plt.subplots()
+    # Use tight layout always.
+    gFigure.set_tight_layout(True)
+    # Set axes.
+    gAxes.set_title("Friction Coefficient Against Time", fontsize=FONT_SIZE)
+    gAxes.set_xlabel("Time [seconds]", fontsize=FONT_SIZE)
+    gAxes.set_ylabel("Friction coefficient", fontsize=FONT_SIZE)
+    # Create animation instance.
+    _ = FuncAnimation(fig=gFigure, func=update_plot, interval=10)
+    # This function blocks until the user kills it.
+    plt.show()
+    plt.close()
+
+
+def get_args():
+    parser = ArgumentParser()
+    parser.add_argument("filename", help="Plot data from FILE", metavar="FILE")
+    parser.add_argument("-v", "--verbose", action="store_true")
+    return parser.parse_args()
+
+
+def main():
+    global gDataFilename, gFigure
+    args = get_args()
+    # print("All args:", args)
+    gDataFilename = args.filename
+    # show interactively
+    print("Starting plotter using file: '{}'".format(gDataFilename))
+    start_plotting()
+    print("Done.")
+
+
+if __name__ == "__main__":
+    main()
