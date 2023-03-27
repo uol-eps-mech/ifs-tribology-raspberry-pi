@@ -10,6 +10,7 @@ import time
 import random
 from argparse import ArgumentParser
 
+
 # from daqhats import hat_list, HatIDs, mcc118
 
 # The interval between each reading in seconds.
@@ -67,14 +68,25 @@ class FakeMCC118DAQ:
 #         return voltage_v
 
 
+# class FakeEncoder:
+#     def __init__(self):
+#         pass
+
+#     def get(self):
+#         # Fake value for now.
+#         rpm = 25.0 + (random.random() * 0.5)
+#         return rpm
+
+#     def close(self):
+#         pass
+
+# TODO Implement this.
 class Encoder:
     def __init__(self):
         pass
 
     def get(self):
-        # Fake value for now.
-        rpm = 25.0 + (random.random() * 0.5)
-        return rpm
+        return 0
 
     def close(self):
         pass
@@ -83,6 +95,8 @@ class Encoder:
 class Logger:
     def __init__(self):
         self._encoder = Encoder()
+        # self._encoder = FakeEncoder()
+        # self._daq = MCC118DAQ()
         self._daq = FakeMCC118DAQ()
         self._running = True
         # Record start epoch time.

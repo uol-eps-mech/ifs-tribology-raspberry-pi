@@ -20,3 +20,13 @@ Additional parts
 1 box - https://www.amazon.co.uk/GeeekPi-Standoffs-Assortment-Box%EF%BC%8CMale-Female-Screwdriver/dp/B07PHBTTGV
 1 pack  4 fans and heat sinks.
 
+## Wiring of rotary encoder
+
+There are three GPIO pins that are used to monitor the rotary encoder output.  The outputs are:
+
+A - Rotary encoder position A
+B - Rotary encoder position B
+Z - Rotary encoder index (one pulse per revolution).
+
+We only need RPM so just use the Z output.
+

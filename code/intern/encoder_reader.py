@@ -1,3 +1,6 @@
+# Example from:
+# https://thingsdaq.org/2022/03/09/encoder-with-raspberry-pi/
+
 import time
 import numpy as np
 from gpiozero import RotaryEncoder
@@ -21,7 +24,7 @@ tstart = time.perf_counter()
 print ('Running code for', tstop, 'seconds...')
 print ('Turn encoder')
 while tcurr <= tstop:
-    #Giving time 
+    #Giving time
     time.sleep(tsample)
     #Getting time
     tcurr = time.perf_counter() - tstart
@@ -31,10 +34,10 @@ while tcurr <= tstop:
     if (np.floor(tcurr/tdisp) - np.floor(tprev/tdisp)) == 1:
         print("Angle = {:0.0f} deg" .format(anglecurr))
         print("Time = {:0.0f} seconds" .format(tcurr))
-     
+
     #Update old values
     tprev = tcurr
-    
+
 print('Done.')
 #Releasing GPIO pins
 encoder.close()
