@@ -14,8 +14,9 @@ import io
 import matplotlib.pyplot as plt
 from matplotlib.animation import FuncAnimation
 from argparse import ArgumentParser
+import pandas as pd
 
-PLOT_SIZE_LIMIT = 20
+PLOT_SIZE_LIMIT = 10
 # This should be half of the interval between writes.
 # See logger.py.
 GET_LINE_DELAY_S = 0.05
@@ -24,8 +25,10 @@ GET_LINE_DELAY_S = 0.05
 gDataFilename = ""
 # Data to plot.
 gFigure = None
-gAxes = None
+gRPMAxes = None
+gCofAxes = None
 gPlotTime = []
+gPlotRPM = []
 gPlotFriction = []
 
 
@@ -45,52 +48,61 @@ def get_line(filename: str) -> str:
     return line
 
 
+def update_axes_from_file():
+    global gDataFilename, gPlotTime, gPlotRPM, gPlotFriction
+    data = pd.read_csv(gDataFilename)
+    gPlotTime = data["Time"]
+    gPlotRPM = data["RPM"]
+    gPlotFriction = data["Coefficient of friction"]
+
+
+def plot_rpm():
+    global gRPMAxes
+    # Plot the RPM
+    gRPMAxes.clear()
+    gRPMAxes.set_title("RPM Against Time")
+    gRPMAxes.set_xlabel("Time (seconds)")
+    gRPMAxes.set_ylabel("RPM")
+    # Rotate X axis labels.
+    labels = gRPMAxes.get_xticklabels()
+    plt.setp(labels, rotation=45, horizontalalignment="right")
+    # Plot the values.
+    gRPMAxes.plot(gPlotTime, gPlotRPM, "r")
+
+
+def plot_cof():
+    global gCofAxes
+    # Plot the coefficient of friction
+    gCofAxes.clear()
+    gCofAxes.set_title("Friction Coefficient Against Time")
+    gCofAxes.set_xlabel("Time (seconds)")
+    gCofAxes.set_ylabel("Friction coefficient")
+    # Rotate X axis labels.
+    labels = gCofAxes.get_xticklabels()
+    plt.setp(labels, rotation=45, horizontalalignment="right")
+    # Plot the values.
+    gCofAxes.plot(gPlotTime, gPlotFriction, "b")
+
+
 # The parameter is a frame count that we don't use.
 def update_plot(_):
-    global gDataFilename, gAxes, gPlotTime, gPlotFriction
-    # grab the data
-    try:
-        line = get_line(gDataFilename)
-        # print("Line: '{}'".format(line))
-        line = line.rstrip("\n")
-        split_line = line.split(",")
-        # print("Split Line: {}, '{}'".format(len(split_line), split_line))
-        if len(split_line) > 1:
-            # Only plot time [0] and coefficient of friction [4].
-            gPlotTime.append(split_line[0])
-            gPlotFriction.append(split_line[4])
-            # Limit size of lists.
-            gPlotTime = gPlotTime[-PLOT_SIZE_LIMIT:]
-            gPlotFriction = gPlotFriction[-PLOT_SIZE_LIMIT:]
-        else:
-            print(f"W: {time.time()} :: STALE!")
-    except ValueError:
-        print(f"W: {time.time()} :: EXCEPTION!")
-    else:
-        # Plot the two lists on the figure.
-        gAxes.clear()
-        # Set axes.
-        gAxes.set_title("Friction Coefficient Against Time")
-        gAxes.set_xlabel("Time [seconds]")
-        gAxes.set_ylabel("Friction coefficient")
-        # Rotate X axis labels.
-        labels = gAxes.get_xticklabels()
-        plt.setp(labels, rotation=45, horizontalalignment='right')
-        # Set Y axis ticks.
-        # gAxes.set_yticks([0, 0.10, 0.20, 0.30, 0.40, 0.50])
-        # Plot the values.
-        gAxes.plot(gPlotTime, gPlotFriction)
+    update_axes_from_file()
+    # Plot the data.
+    plot_rpm()
+    plot_cof()
 
 
 def start_plotting():
-    global gFigure, gAxes
+    global gFigure, gRPMAxes, gCofAxes
     # Set style
     plt.style.use("fivethirtyeight")
     # Set up figure and axes.
-    gFigure, gAxes = plt.subplots(figsize=(8, 8))
-    # Use tight layout always.
+    gFigure, (gRPMAxes, gCofAxes) = plt.subplots(
+        figsize=(8, 8),
+        nrows=2,
+        ncols=1,
+    )
     gFigure.set_tight_layout(True)
-    gFigure.text = "My plot"
     # Create animation instance.
     _ = FuncAnimation(fig=gFigure, func=update_plot, interval=10)
     # This function blocks until the user kills it.
