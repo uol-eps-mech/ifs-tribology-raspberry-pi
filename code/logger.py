@@ -9,9 +9,7 @@ import os
 import time
 import random
 from argparse import ArgumentParser
-
-
-# from daqhats import hat_list, HatIDs, mcc118
+from daqhats import hat_list, HatIDs, mcc118
 
 # The interval between each reading in seconds.
 INTERVAL_S = 0.1
@@ -27,8 +25,8 @@ class FakeMCC118DAQ:
         pass
 
     def get_reading(self, channel):
-        """Return a value simulating a voltage.
-        Each channel has a different central voltage.
+        """ Return a tuple of values calculated from a simulated 
+        voltage read from the given channel of the MCC118 DAC.        
         """
         if channel == 0:
             value = 1.0 + random.random()
@@ -45,27 +43,36 @@ class FakeMCC118DAQ:
         return (voltage, angle_DEG, coefficient_of_friction)
 
 
-# class MCC118DAQ:
-#     """Provides functions to use the MCC-118 DAQ hat."""
+class MCC118DAQ:
+    """Provides functions to use the MCC-118 DAQ hat."""
 
-#     def __init__(self):
-#         self.board = None
-#         self.board_list = hat_list(filter_by_id = HatIDs.ANY)
-#         if not self.board_list:
-#             print ("No boards found")
-#             sys.exit()
-#         else:
-#             for entry in self.board_list:
-#                 if entry.id == HatIDs.MCC_118:
-#                     self.board = mcc118(entry.address)
-#                     break
+    def __init__(self):
+        self.board = None
+        self.board_list = hat_list(filter_by_id = HatIDs.ANY)
+        if not self.board_list:
+            print ("No boards found")
+            sys.exit()
+        else:
+            for entry in self.board_list:
+                if entry.id == HatIDs.MCC_118:
+                    self.board = mcc118(entry.address)
+                    break
 
-#     def get(self, channel):
-#         """Return the voltage in Volts for the given channel."""
-#         voltage_v = 0.0
-#         if channel == 0 or channel == 1:
-#             voltage_v = -1.0 * self.board.a_in_read(channel)
-#         return voltage_v
+    def get_reading(self, channel):
+        """ Return a tuple of values calculated from a voltage read 
+        from the given channel of the MCC118 DAC.        
+        """
+        voltage_v = 0.0
+        if channel == 0 or channel == 1:
+            # No idea why the -1.0 is used
+            voltage_v = -1.0 * self.board.a_in_read(channel)
+        # Convert voltage into a tuple of values.
+        # Calibration value taken experimentally from the pendulum.
+        angle_DEG = (voltage_v) * 9.5
+        angle_RAD = (angle_DEG * 3.14159265) / 180
+        # Processing angle data to Friction data
+        coefficient_of_friction = abs(math.sin(angle_RAD)) / (math.tan(1.0472))
+        return (voltage_v, angle_DEG, coefficient_of_friction)
 
 
 # class FakeEncoder:
@@ -96,8 +103,8 @@ class Logger:
     def __init__(self):
         self._encoder = Encoder()
         # self._encoder = FakeEncoder()
-        # self._daq = MCC118DAQ()
-        self._daq = FakeMCC118DAQ()
+        self._daq = MCC118DAQ()
+        # self._daq = FakeMCC118DAQ()
         self._running = True
         # Record start epoch time.
         self._start_time = time.time()
