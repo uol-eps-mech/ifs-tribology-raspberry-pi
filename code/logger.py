@@ -87,8 +87,13 @@ class MCC118DAQ:
 #     def close(self):
 #         pass
 
-# TODO Implement this.
+
 class Encoder:
+    """ Reads the encoder pulses and turns them in an RPM value. 
+    The rotational speed of the motor shaft is fairly slow, 
+    about 120RPM, so we need to use the quadrature encoder values to 
+    report the speed  more quickly. 
+    """
     def __init__(self):
         pass
 
