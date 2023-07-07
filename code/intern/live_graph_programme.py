@@ -37,7 +37,7 @@ class DataReader(threading.Thread):
         return value
     
     def convertdata(self,value):
-        voltage = value + 0.3 #Value taken from the difference at 0
+        voltage = (value)-0.21 #Value taken from the difference at 0
         angle_DEG = (voltage)*9.5 #Calibration value taken experimentally from the pendulum
         angle_RAD = (angle_DEG*3.14159265)/180
         c_o_f =(abs(math.sin(angle_RAD))/(math.tan(1.0472))) #Processing angle data to Friction data
@@ -67,7 +67,7 @@ class DataReader(threading.Thread):
 def openfile():
     """ Open file to store results."""
     global file
-    file = open("grease3_1rpm_40mpa_repeat_03_10revs.txt","a")
+    file = open("testKT.txt","a")
     
 def openplotwindow():
     #Initialise plot style
