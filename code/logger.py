@@ -16,31 +16,31 @@ INTERVAL_S = 0.1
 CSV_HEADER_STRING = "Time,RPM,Voltage,Angle Degrees,Coefficient of friction\n"
 
 
-class FakeMCC118DAQ:
-    """A fake version of the MCC-118 DAQ class that returns a value with some
-    random noise on it so that some changes are visible.
-    """
+# class FakeMCC118DAQ:
+#     """A fake version of the MCC-118 DAQ class that returns a value with some
+#     random noise on it so that some changes are visible.
+#     """
 
-    def __init__(self):
-        pass
+#     def __init__(self):
+#         pass
 
-    def get_reading(self, channel):
-        """ Return a tuple of values calculated from a simulated 
-        voltage read from the given channel of the MCC118 DAC.        
-        """
-        if channel == 0:
-            value = 1.0 + random.random()
-        elif channel == 1:
-            value = 2.0 + random.random()
-        # Convert reading into a tuple of values.
-        # Value taken from the difference at 0
-        voltage = value + 0.3
-        # Calibration value taken experimentally from the pendulum.
-        angle_DEG = (voltage) * 9.5
-        angle_RAD = (angle_DEG * 3.14159265) / 180
-        # Processing angle data to Friction data
-        coefficient_of_friction = abs(math.sin(angle_RAD)) / (math.tan(1.0472))
-        return (voltage, angle_DEG, coefficient_of_friction)
+#     def get_reading(self, channel):
+#         """Return a value simulating a voltage.
+#         Each channel has a different central voltage.
+#         """
+#         if channel == 0:
+#             value = 1.0 + random.random()
+#         elif channel == 1:
+#             value = 2.0 + random.random()
+#         # Convert reading into a tuple of values.
+#         # Value taken from the difference at 0
+#         voltage = value + 0.3
+#         # Calibration value taken experimentally from the pendulum.
+#         angle_DEG = (voltage) * 9.5
+#         angle_RAD = (angle_DEG * 3.14159265) / 180
+#         # Processing angle data to Friction data
+#         coefficient_of_friction = abs(math.sin(angle_RAD)) / (math.tan(1.0472))
+#         return (voltage, angle_DEG, coefficient_of_friction)
 
 
 class MCC118DAQ:
@@ -58,21 +58,12 @@ class MCC118DAQ:
                     self.board = mcc118(entry.address)
                     break
 
-    def get_reading(self, channel):
-        """ Return a tuple of values calculated from a voltage read 
-        from the given channel of the MCC118 DAC.        
-        """
+    def get(self, channel):
+        """Return the voltage in Volts for the given channel."""
         voltage_v = 0.0
         if channel == 0 or channel == 1:
-            # No idea why the -1.0 is used
             voltage_v = -1.0 * self.board.a_in_read(channel)
-        # Convert voltage into a tuple of values.
-        # Calibration value taken experimentally from the pendulum.
-        angle_DEG = (voltage_v) * 9.5
-        angle_RAD = (angle_DEG * 3.14159265) / 180
-        # Processing angle data to Friction data
-        coefficient_of_friction = abs(math.sin(angle_RAD)) / (math.tan(1.0472))
-        return (voltage_v, angle_DEG, coefficient_of_friction)
+        return voltage_v
 
 
 # class FakeEncoder:
@@ -87,30 +78,22 @@ class MCC118DAQ:
 #     def close(self):
 #         pass
 
-
+# TODO Implement this.
 class Encoder:
-    """ Reads the encoder pulses and turns them in an RPM value. 
-    The rotational speed of the motor shaft is fairly slow, 
-    about 120RPM, so we need to use the quadrature encoder values to 
-    report the speed  more quickly. 
-    """
     def __init__(self):
-        #Creating encoder object using GPIO pins
-        self.encoder = RotaryEncoder(23, 4, max_steps=0)
-
+        pass
     def get(self):
         return 0
 
     def close(self):
-        self.encoder.close()
-
+        pass
 
 class Logger:
     def __init__(self):
-        self._encoder = Encoder()
         # self._encoder = FakeEncoder()
-        self._daq = MCC118DAQ()
         # self._daq = FakeMCC118DAQ()
+        self._encoder = Encoder()
+        self._daq = MCC118DAQ()
         self._running = True
         # Record start epoch time.
         self._start_time = time.time()

@@ -13,13 +13,25 @@ In addition, the type A has a 9 way D-Sub for monitoring the rotational speed re
 
 ## Setup and testing
 
-To setup the RPi software, see [this document](setup_rpi.md).
+To setup the RPi software, see [this document](setup_rpi.md).  Once that is done, install this repo as follows:
+
+```bash
+cd ~
+git clone https://github.com/uol-eps-mech/ifs-tribology-raspberry-pi.git
+```
+
+Then run the software:
+
+```bash
+cd ~/ifs-tribology-raspberry-pi/code
+./start.bash
+```
+
+There are some notes and photos on how the hardware is put together [here](construction/construction.md).
 
 There are some notes on testing the final boxes [here](testing.md).
 
-There are some notes and photos on how they are put together [here](construction/construction.md).
-
-I also wrote some [design notes](design.md).
+I also wrote some [design notes](design.md) for the software.
 
 ## License
 

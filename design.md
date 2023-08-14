@@ -15,25 +15,9 @@ After many hours of research and a lot of testing, I found [this answer on Stack
 
 Some programs I developed during this testing are in the `code/trial` directory.  After some more attempts at doing this on a single file that failed, I implemented two programs started by a Bash script.  The results can be found in the `code` directory.
 
-## Hardware design
+## Pendulum Tribometer Motor characteristics
 
-### Encoder connector
+The motor has a maximum speed of 1800RPM and a minimum speed of about 70RPM.  This means that if the last interrupt occurred more than 1 second ago, the motor is off so the speed is 0RPM.
 
-9 way DSUB connector pin number when viewed from outside of case.
+The pendulum tribometer test rotor are connected to the motor shaft using a toothed belt.  The gear wheel on the motor shaft has 25 teeth and the gear wheel connect to the test rotor has 47 teeth.  The effective gear ration is: 25:47 or 1.88:1.
 
-Mappings of D-SUB pins to GPIO pins.
-
-| DSUB Pin | GPIO Pin | Usage |
-|---|---|---|
-| 1 | Ground | Ground |
-| 2 | 5V | 5V |
-| 3 | GPIO23 |  |
-| 4 | GPIO04 |  |
-| 5 | GPIO22 |  |
-
-```text
-   -------------
-   \ 5 4 3 2 1 /
-    \ 9 8 7 6 /
-     ---------
-```
