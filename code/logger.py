@@ -95,13 +95,14 @@ class Encoder:
     report the speed  more quickly. 
     """
     def __init__(self):
-        pass
+        #Creating encoder object using GPIO pins
+        self.encoder = RotaryEncoder(23, 4, max_steps=0)
 
     def get(self):
         return 0
 
     def close(self):
-        pass
+        self.encoder.close()
 
 
 class Logger:

@@ -14,3 +14,26 @@ After many hours of research and a lot of testing, I found [this answer on Stack
 2. Presentation of the data.
 
 Some programs I developed during this testing are in the `code/trial` directory.  After some more attempts at doing this on a single file that failed, I implemented two programs started by a Bash script.  The results can be found in the `code` directory.
+
+## Hardware design
+
+### Encoder connector
+
+9 way DSUB connector pin number when viewed from outside of case.
+
+Mappings of D-SUB pins to GPIO pins.
+
+| DSUB Pin | GPIO Pin | Usage |
+|---|---|---|
+| 1 | Ground | Ground |
+| 2 | 5V | 5V |
+| 3 | GPIO23 |  |
+| 4 | GPIO04 |  |
+| 5 | GPIO22 |  |
+
+```text
+   -------------
+   \ 5 4 3 2 1 /
+    \ 9 8 7 6 /
+     ---------
+```
