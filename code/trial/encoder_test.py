@@ -13,19 +13,16 @@ import sys
 import time
 import RPi.GPIO as GPIO
 from datetime import datetime
+from threading import Thread
 
-ENCODER_Z_GPIO = 16
+
+ENCODER_Z_GPIO = 4
 
 
 class Encoder:
     def __init__(self) -> None:
         self._rpm = 0.0
         self._last_datetime = datetime.now()
-        GPIO.setmode(GPIO.BCM)
-        GPIO.setup(ENCODER_Z_GPIO, GPIO.IN, pull_up_down=GPIO.PUD_UP)
-        GPIO.add_event_detect(
-            ENCODER_Z_GPIO, GPIO.RISING, callback=self.interrupt_callback, bouncetime=10
-        )
 
     def get_rpm(self) -> float:
         return self._rpm
@@ -33,6 +30,7 @@ class Encoder:
     def interrupt_callback(self, channel) -> None:
         # Each interrupt happens exactly once per revolution.
         delta = datetime.now() - self._last_datetime
+        print(delta)
         # Convert to RPM
         self._rpm = (1.0 / delta.total_seconds()) * 60
 
@@ -41,16 +39,33 @@ def signal_handler(sig, frame):
     GPIO.cleanup()
     sys.exit(0)
 
+def interrupt_callback(channel) -> None:
+    print("ISR called")
 
-def main() -> None:
+
+def print_loop() -> None:
     encoder = Encoder()
-    signal.signal(signal.SIGINT, signal_handler)
-    signal.pause()
+    print("Loop started")
+    GPIO.setmode(GPIO.BCM)
+    GPIO.setup(ENCODER_Z_GPIO, GPIO.IN, pull_up_down=GPIO.PUD_DOWN)
+    GPIO.add_event_detect(
+        ENCODER_Z_GPIO, GPIO.RISING, callback=interrupt_callback, bouncetime=200
+    )
     while True:
-        time.delay(1.0)
+        time.sleep(1.0)
         rpm = encoder.get_rpm()
         print("RPM = {}".format(rpm))
 
 
+def main() -> None:
+    print_thread = Thread(target=print_loop)
+    print_thread.start()
+    signal.signal(signal.SIGINT, signal_handler)
+    #  The program waits until killed when pause() is called.
+    signal.pause()
+
+
 if __name__ == "__main__":
+    print("Started")
     main()
+    print("Done")
