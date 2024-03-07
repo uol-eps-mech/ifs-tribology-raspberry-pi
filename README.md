@@ -2,6 +2,11 @@
 
 Information about setting up and using Raspberry Pis in the Tribology lab.
 
+STUDENTS - There is a README file in the home directory called
+"STUDENTS_READ_THIS_FILE.txt" that explains how to use this.
+
+The rest of this files is for the maintainers of this project.
+
 Raspberry Pi 4Bs are used for most of the machines in the Tribology lab and most are setup the same way.
 
 Type A and Type B variants have
@@ -37,6 +42,6 @@ I also wrote some [design notes](design.md) for the software.
 
 This work is licensed under the MIT licence.  See LICENSE file for details.
 
-© 2023, University of Leeds.
+© 2023-2024, University of Leeds.
 
 The author, A. Blight, has asserted his moral rights.
