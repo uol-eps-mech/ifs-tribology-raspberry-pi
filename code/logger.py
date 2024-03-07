@@ -6,14 +6,23 @@
 
 import math
 import os
+import signal
+import sys
 import time
 import random
+from datetime import datetime
 from argparse import ArgumentParser
 from daqhats import hat_list, HatIDs, mcc118
+import RPi.GPIO as GPIO
 
 # The interval between each reading in seconds.
 INTERVAL_S = 0.1
 CSV_HEADER_STRING = "Time,RPM,Voltage,Angle Degrees,Coefficient of friction\n"
+
+# GPIO pin for the encoder.
+ENCODER_Z_GPIO = 22
+# 25 teeth on motor, rotor end has 47.
+ROTOR_RATIO = 25.0 / 47.0
 
 
 # class FakeMCC118DAQ:
@@ -48,9 +57,9 @@ class MCC118DAQ:
 
     def __init__(self):
         self.board = None
-        self.board_list = hat_list(filter_by_id = HatIDs.ANY)
+        self.board_list = hat_list(filter_by_id=HatIDs.ANY)
         if not self.board_list:
-            print ("No boards found")
+            print("No boards found")
             sys.exit()
         else:
             for entry in self.board_list:
@@ -78,19 +87,50 @@ class MCC118DAQ:
 #     def close(self):
 #         pass
 
-# TODO Implement this.
-class Encoder:
-    def __init__(self):
-        pass
-    def get(self):
-        return 0
 
-    def close(self):
-        pass
+class Encoder:
+    def __init__(self) -> None:
+        self._rpm = 0.0
+        self._last_datetime = datetime.now()
+        GPIO.setmode(GPIO.BCM)
+        # External pull up resistors are fitted.
+        GPIO.setup(ENCODER_Z_GPIO, GPIO.IN)
+        GPIO.add_event_detect(
+            ENCODER_Z_GPIO, GPIO.FALLING, callback=self.interrupt_callback
+        )
+
+    def get_rpm(self) -> float:
+        # Motor minimum speed is about 70RPM, so interrupts should be less then 1 second apart.
+        # If the last interrupt was more than 1 second ago the motor has stopped.
+        delta = datetime.now() - self._last_datetime
+        rpm = self._rpm
+        if delta.total_seconds() > 1.0:
+            rpm = 0.0
+        return rpm
+
+    def interrupt_callback(self, channel) -> None:
+        # Each interrupt happens exactly once per revolution.
+        now = datetime.now()
+        # print(now)
+        delta = now - self._last_datetime
+        # Convert to RPM.
+        self._rpm = (1.0 / delta.total_seconds()) * 60
+        # Save now for later...
+        self._last_datetime = now
+
+
+def signal_handler(sig, frame):
+    GPIO.cleanup()
+    sys.exit(0)
+
 
 class Logger:
     def __init__(self):
+        # Start the encoder driver.
         # self._encoder = FakeEncoder()
+        self._encoder = Encoder()
+        signal.signal(signal.SIGINT, signal_handler)
+        # Start the DAQ driver.
         # self._daq = FakeMCC118DAQ()
         self._encoder = Encoder()
         self._daq = MCC118DAQ()
@@ -99,14 +139,16 @@ class Logger:
         self._start_time = time.time()
 
     def _get_formatted_output(self):
+        # Get RPM.
+        motor_rpm = self._encoder.get_rpm()
+        rotor_rpm = motor_rpm * ROTOR_RATIO
         # Get data.
         voltage, angle_DEG, coefficient_of_friction = self._daq.get_reading(0)
-        rpm = self._encoder.get()
         # Get the time since program started in seconds.
         duration = time.time() - self._start_time
         # Create formatted string.
         output_string = "{:.3f},{:.3f},{:.3f},{:.3f},{:.3f}\n".format(
-            duration, rpm, voltage, angle_DEG, coefficient_of_friction
+            duration, rotor_rpm, voltage, angle_DEG, coefficient_of_friction
         )
         # Debug. Can comment out if annoying.
         print(output_string)
