@@ -142,8 +142,8 @@ class Encoder:
             # Convert delta time to RPM.
             new_rpm = (1.0 / delta.total_seconds()) * 60
             # print("new_rpm {}".format(new_rpm))
-            # Some values produced are completly wrong, possibly caused 
-            # by the Pi going off and doing something else.
+            # Some values produced are completely wrong, possibly caused 
+            # by electrical noise.
             if new_rpm <= MAX_MOTOR_RPM:
                 self._rpm = new_rpm
         # Save now for later...
