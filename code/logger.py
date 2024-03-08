@@ -32,6 +32,23 @@ BELT_RATIO = 25 / 47
 # Value to divide the encoder pulses by to get the rotor speed.
 ROTOR_RATIO = MOTOR_GEARBOX_RATIO * BELT_RATIO
 
+# Input voltage offset. The value being read it is not always zero 
+# when the pendulum is centred, so change this value as needed.
+PENDULUM_OFFSET_VOLTAGE = 0.0
+
+def convert_voltage_to_values(voltage_v):
+    """ Converts the input voltage into an angle and then into a 
+    co-efficent of friction value. 
+    """
+    # Convert reading into a tuple of values.
+    corrected_voltage_v = voltage_v + PENDULUM_OFFSET_VOLTAGE
+    # Calibration value taken experimentally from the pendulum.
+    angle_DEG = (corrected_voltage_v) * 9.5
+    angle_RAD = (angle_DEG * 3.14159265) / 180
+    # Processing angle data to Friction data
+    coefficient_of_friction = abs(math.sin(angle_RAD)) / (math.tan(1.0472))
+    return (corrected_voltage_v, angle_DEG, coefficient_of_friction)
+
 
 # class FakeMCC118DAQ:
 #     """A fake version of the MCC-118 DAQ class that returns a value with some
@@ -75,7 +92,7 @@ class MCC118DAQ:
                     self.board = mcc118(entry.address)
                     break
 
-    def get(self, channel):
+    def get_voltage(self, channel):
         """Return the voltage in Volts for the given channel."""
         voltage_v = 0.0
         if channel == 0 or channel == 1:
@@ -131,10 +148,12 @@ class Logger:
         # Start the encoder driver.
         # self._encoder = FakeEncoder()
         self._encoder = Encoder()
+        #
         # Start the DAQ driver.
         # self._daq = FakeMCC118DAQ()
         self._daq = MCC118DAQ()
         self._running = True
+        #
         # Record start epoch time.
         self._start_time = time.time()
 
@@ -142,8 +161,9 @@ class Logger:
         # Get RPM.
         motor_rpm = self._encoder.get_rpm()
         rotor_rpm = motor_rpm * ROTOR_RATIO
-        # Get data.
-        voltage, angle_DEG, coefficient_of_friction = self._daq.get_reading(0)
+        # Get data from channel 0.  Change to 1 if needed.
+        voltage_v = self._daq.get_voltage(0)
+        voltage, angle_DEG, coefficient_of_friction = convert_voltage_to_values(voltage_v)
         # Get the time since program started in seconds.
         duration = time.time() - self._start_time
         # Create formatted string.
