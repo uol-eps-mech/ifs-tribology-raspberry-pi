@@ -15,11 +15,19 @@ import RPi.GPIO as GPIO
 from datetime import datetime
 from threading import Thread
 
-
+# The GPIO pin being used.  We only check the Z output (1 pulse = 1 RPM).
 ENCODER_Z_GPIO = 22
 
+# Plate on back says max speeds are:
+# Fast shaft = 1800. This is what the encoder reports.
+# Slow shaft speed = 417.  This is the outpu from the gearbox.
+MOTOR_GEARBOX_RATIO = 417 / 1800
+
 # 25 teeth on motor, rotor end has 47.
-ROTOR_RATIO = 25.0 / 47.0
+BELT_RATIO = 25 / 47
+
+# Value to divide the encoder pulses by to get the rotor speed.
+ROTOR_RATIO = MOTOR_GEARBOX_RATIO * BELT_RATIO
 
 
 class Encoder:
@@ -63,9 +71,9 @@ def print_loop() -> None:
     encoder = Encoder()
     while True:
         time.sleep(1.0)
-        rpm = encoder.get_rpm()
-        rotor_rpm = rpm * ROTOR_RATIO
-        print("Motor = {}RPM, rotor {}RPM ".format(rpm, rotor_rpm))
+        encoder_rpm = encoder.get_rpm()
+        rotor_rpm = encoder_rpm * ROTOR_RATIO
+        print("Motor = {}RPM, rotor {}RPM ".format(encoder_rpm, rotor_rpm))
 
 
 def main() -> None:
