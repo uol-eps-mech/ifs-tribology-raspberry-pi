@@ -32,6 +32,9 @@ BELT_RATIO = 25 / 47
 # Value to divide the encoder pulses by to get the rotor speed.
 ROTOR_RATIO = MOTOR_GEARBOX_RATIO * BELT_RATIO
 
+# Maximum RPM of motor is 1800rpm.
+MAX_MOTOR_RPM = 1800
+
 # Input voltage offset. The value being read it is not always zero 
 # when the pendulum is centred, so change this value as needed.
 PENDULUM_OFFSET_VOLTAGE = 0.0
@@ -123,13 +126,7 @@ class Encoder:
         GPIO.add_event_detect(ENCODER_Z_GPIO, GPIO.FALLING, callback=self.interrupt_callback)
 
     def get_rpm(self) -> float:
-        # Motor minimum speed is about 70RPM, so interrupts should be less then 1 second apart.
-        # If the last interrupt was more than 1 second ago the motor has stopped.
-        delta = datetime.now() - self._last_datetime
-        rpm = self._rpm
-        if delta.total_seconds() > 1.0:
-            rpm = 0.0
-        return rpm
+        return self._rpm
 
     def interrupt_callback(self, channel) -> None:
         # Each interrupt happens exactly once per revolution.
@@ -137,8 +134,18 @@ class Encoder:
         # print(now)
         # Calculate interval between last interrupt and this one.
         delta = now - self._last_datetime
-        # Convert dleta time to RPM.
-        self._rpm = (1.0 / delta.total_seconds()) * 60
+        # Motor minimum speed is about 70RPM, so interrupts should be less then 1 second apart.
+        # If the last interrupt was more than 1 second ago the motor has stopped.
+        if delta.total_seconds() > 1.0:
+            self._rpm = 0.0
+        else:
+            # Convert delta time to RPM.
+            new_rpm = (1.0 / delta.total_seconds()) * 60
+            # print("new_rpm {}".format(new_rpm))
+            # Some values produced are completly wrong, possibly caused 
+            # by the Pi going off and doing something else.
+            if new_rpm <= MAX_MOTOR_RPM:
+                self._rpm = new_rpm
         # Save now for later...
         self._last_datetime = now
 
@@ -148,12 +155,10 @@ class Logger:
         # Start the encoder driver.
         # self._encoder = FakeEncoder()
         self._encoder = Encoder()
-        #
         # Start the DAQ driver.
         # self._daq = FakeMCC118DAQ()
         self._daq = MCC118DAQ()
         self._running = True
-        #
         # Record start epoch time.
         self._start_time = time.time()
 
