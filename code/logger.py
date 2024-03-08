@@ -6,7 +6,6 @@
 
 import math
 import os
-import signal
 import sys
 import time
 import random
@@ -21,8 +20,17 @@ CSV_HEADER_STRING = "Time,RPM,Voltage,Angle Degrees,Coefficient of friction\n"
 
 # GPIO pin for the encoder.
 ENCODER_Z_GPIO = 22
+
+# Plate on back says max speeds are:
+# Fast shaft = 1800. This is what the encoder reports.
+# Slow shaft speed = 417.  This is the outpu from the gearbox.
+MOTOR_GEARBOX_RATIO = 417 / 1800
+
 # 25 teeth on motor, rotor end has 47.
-ROTOR_RATIO = 25.0 / 47.0
+BELT_RATIO = 25 / 47
+
+# Value to divide the encoder pulses by to get the rotor speed.
+ROTOR_RATIO = MOTOR_GEARBOX_RATIO * BELT_RATIO
 
 
 # class FakeMCC118DAQ:
@@ -95,9 +103,7 @@ class Encoder:
         GPIO.setmode(GPIO.BCM)
         # External pull up resistors are fitted.
         GPIO.setup(ENCODER_Z_GPIO, GPIO.IN)
-        GPIO.add_event_detect(
-            ENCODER_Z_GPIO, GPIO.FALLING, callback=self.interrupt_callback
-        )
+        GPIO.add_event_detect(ENCODER_Z_GPIO, GPIO.FALLING, callback=self.interrupt_callback)
 
     def get_rpm(self) -> float:
         # Motor minimum speed is about 70RPM, so interrupts should be less then 1 second apart.
@@ -112,16 +118,12 @@ class Encoder:
         # Each interrupt happens exactly once per revolution.
         now = datetime.now()
         # print(now)
+        # Calculate interval between last interrupt and this one.
         delta = now - self._last_datetime
-        # Convert to RPM.
+        # Convert dleta time to RPM.
         self._rpm = (1.0 / delta.total_seconds()) * 60
         # Save now for later...
         self._last_datetime = now
-
-
-def signal_handler(sig, frame):
-    GPIO.cleanup()
-    sys.exit(0)
 
 
 class Logger:
@@ -129,10 +131,8 @@ class Logger:
         # Start the encoder driver.
         # self._encoder = FakeEncoder()
         self._encoder = Encoder()
-        signal.signal(signal.SIGINT, signal_handler)
         # Start the DAQ driver.
         # self._daq = FakeMCC118DAQ()
-        self._encoder = Encoder()
         self._daq = MCC118DAQ()
         self._running = True
         # Record start epoch time.
