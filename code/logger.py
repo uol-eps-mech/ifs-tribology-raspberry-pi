@@ -6,7 +6,6 @@
 
 import math
 import os
-import signal
 import sys
 import time
 import random
@@ -21,8 +20,37 @@ CSV_HEADER_STRING = "Time,RPM,Voltage,Angle Degrees,Coefficient of friction\n"
 
 # GPIO pin for the encoder.
 ENCODER_Z_GPIO = 22
+
+# Plate on back says max speeds are:
+# Fast shaft = 1800. This is what the encoder reports.
+# Slow shaft speed = 417.  This is the outpu from the gearbox.
+MOTOR_GEARBOX_RATIO = 417 / 1800
+
 # 25 teeth on motor, rotor end has 47.
-ROTOR_RATIO = 25.0 / 47.0
+BELT_RATIO = 25 / 47
+
+# Value to divide the encoder pulses by to get the rotor speed.
+ROTOR_RATIO = MOTOR_GEARBOX_RATIO * BELT_RATIO
+
+# Maximum RPM of motor is 1800rpm.
+MAX_MOTOR_RPM = 1800
+
+# Input voltage offset. The value being read it is not always zero
+# when the pendulum is centred, so change this value as needed.
+PENDULUM_OFFSET_VOLTAGE = 0.0
+
+def convert_voltage_to_values(voltage_v):
+    """ Converts the input voltage into an angle and then into a
+    co-efficent of friction value.
+    """
+    # Convert reading into a tuple of values.
+    corrected_voltage_v = voltage_v + PENDULUM_OFFSET_VOLTAGE
+    # Calibration value taken experimentally from the pendulum.
+    angle_DEG = (corrected_voltage_v) * 9.5
+    angle_RAD = (angle_DEG * 3.14159265) / 180
+    # Processing angle data to Friction data
+    coefficient_of_friction = abs(math.sin(angle_RAD)) / (math.tan(1.0472))
+    return (corrected_voltage_v, angle_DEG, coefficient_of_friction)
 
 
 # class FakeMCC118DAQ:
@@ -67,7 +95,7 @@ class MCC118DAQ:
                     self.board = mcc118(entry.address)
                     break
 
-    def get(self, channel):
+    def get_voltage(self, channel):
         """Return the voltage in Volts for the given channel."""
         voltage_v = 0.0
         if channel == 0 or channel == 1:
@@ -95,33 +123,31 @@ class Encoder:
         GPIO.setmode(GPIO.BCM)
         # External pull up resistors are fitted.
         GPIO.setup(ENCODER_Z_GPIO, GPIO.IN)
-        GPIO.add_event_detect(
-            ENCODER_Z_GPIO, GPIO.FALLING, callback=self.interrupt_callback
-        )
+        GPIO.add_event_detect(ENCODER_Z_GPIO, GPIO.FALLING, callback=self.interrupt_callback)
 
     def get_rpm(self) -> float:
-        # Motor minimum speed is about 70RPM, so interrupts should be less then 1 second apart.
-        # If the last interrupt was more than 1 second ago the motor has stopped.
-        delta = datetime.now() - self._last_datetime
-        rpm = self._rpm
-        if delta.total_seconds() > 1.0:
-            rpm = 0.0
-        return rpm
+        return self._rpm
 
     def interrupt_callback(self, channel) -> None:
         # Each interrupt happens exactly once per revolution.
         now = datetime.now()
         # print(now)
+        # Calculate interval between last interrupt and this one.
         delta = now - self._last_datetime
-        # Convert to RPM.
-        self._rpm = (1.0 / delta.total_seconds()) * 60
+        # Motor minimum speed is about 70RPM, so interrupts should be less then 1 second apart.
+        # If the last interrupt was more than 1 second ago the motor has stopped.
+        if delta.total_seconds() > 1.0:
+            self._rpm = 0.0
+        else:
+            # Convert delta time to RPM.
+            new_rpm = (1.0 / delta.total_seconds()) * 60
+            # print("new_rpm {}".format(new_rpm))
+            # Some values produced are completely wrong, possibly caused
+            # by electrical noise.
+            if new_rpm <= MAX_MOTOR_RPM:
+                self._rpm = new_rpm
         # Save now for later...
         self._last_datetime = now
-
-
-def signal_handler(sig, frame):
-    GPIO.cleanup()
-    sys.exit(0)
 
 
 class Logger:
@@ -129,10 +155,8 @@ class Logger:
         # Start the encoder driver.
         # self._encoder = FakeEncoder()
         self._encoder = Encoder()
-        signal.signal(signal.SIGINT, signal_handler)
         # Start the DAQ driver.
         # self._daq = FakeMCC118DAQ()
-        self._encoder = Encoder()
         self._daq = MCC118DAQ()
         self._running = True
         # Record start epoch time.
@@ -142,8 +166,9 @@ class Logger:
         # Get RPM.
         motor_rpm = self._encoder.get_rpm()
         rotor_rpm = motor_rpm * ROTOR_RATIO
-        # Get data.
-        voltage, angle_DEG, coefficient_of_friction = self._daq.get_reading(0)
+        # Get data from channel 0.  Change to 1 if needed.
+        voltage_v = self._daq.get_voltage(0)
+        voltage, angle_DEG, coefficient_of_friction = convert_voltage_to_values(voltage_v)
         # Get the time since program started in seconds.
         duration = time.time() - self._start_time
         # Create formatted string.

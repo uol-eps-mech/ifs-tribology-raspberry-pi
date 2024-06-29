@@ -3,7 +3,7 @@
 Information about setting up and using Raspberry Pis in the Tribology lab.
 
 STUDENTS - There is a README file in the home directory called
-"STUDENTS_READ_THIS_FILE.txt" that explains how to use this.
+"STUDENTS_READ_THIS_FILE.md" that explains how to use this.
 
 The rest of this files is for the maintainers of this project.
 

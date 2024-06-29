@@ -10,6 +10,8 @@ Per unit
 adafruit-perma-proto-hat-for-pi-mini-kit?variant=1038451613>
 * 1 x MCC 118/128 DAQ HAT - <https://uk.rs-online.com/web/p/raspberry-pi-hats-add-ons/2306179?gb=b> or <https://uk.rs-online.com/web/p/raspberry-pi-hats-add-ons/2306180?gb=b>
 * 1 x MCC134 DAQ HAT <https://uk.rs-online.com/web/p/raspberry-pi-hats-add-ons/2306181>
+* 4 x Case screws M3 16mm (comes in a pack 100): <https://uk.farnell.com/tr-fastenings/m3-16-krstmc-z100/screw-pozi-csk-steel-bzp-m3x16/dp/1420400>
+* 4 x Fan screws M2.5 12mm (comes in a pack 100): <https://uk.farnell.com/tr-fastenings/dm2-516prstmcz100din7985/screw-pan-head-pozi-steel-m2-5/dp/2506091>
 
 Optional (when encoder fitted)
 
@@ -20,6 +22,8 @@ Additional parts (needed but not in single unit quantities)
 
 * 1 box of stand offs - <https://www.amazon.co.uk/GeeekPi-Standoffs-Assortment-Box%EF%BC%8CMale-Female-Screwdriver/dp/B07PHBTTGV>
 * 1 pack of 2 fans and heat sinks. - <https://www.amazon.co.uk/GeeekPi-Raspberry-30x30x7mm-Brushless-Retroflag/dp/B07FVQG926/>
+
+NOTE: The fans have M2.5 15mm screws.  These are used to screw the base of the case to the Raspberry Pi assembly.  The M2.5 12mm screws are then used to hold the fans in place.
 
 ## Wiring of rotary encoder
 
