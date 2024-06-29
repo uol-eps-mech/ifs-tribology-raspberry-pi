@@ -39,7 +39,7 @@ this as follows:
 
 In this example, the data will be written to the file `my_file_name.csv`.
 
-PLEASE NOTE: If you use the same data file name more than once, the previous
+If you use the same data file name more than once, the previous
 data file will be deleted and a new file will be written to.
 
 To plot a graph of the data, you need to copy the CSV files that the logger
