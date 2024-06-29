@@ -26,11 +26,11 @@ cd ~/ifs-tribology-raspberry-pi/code
 
 These commands will start two programs.  The first program is `logger.py`
 that logs data from the pendulum tribometer to a CSV file.  The second
-program is a graph plotting program `plotter.py`.  This program is only 
-intended to allow you to see roughly what is going on and 
+program is a graph plotting program `plotter.py`.  This program is only
+intended to allow you to see roughly what is going on and
 __THE GRAPHS ARE NOT STORED__.
 
-The default name of the CSV file is "data.csv" but you can change 
+The default name of the CSV file is "data.csv" but you can change
 this as follows:
 
 ```bash

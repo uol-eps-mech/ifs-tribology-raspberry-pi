@@ -35,13 +35,13 @@ ROTOR_RATIO = MOTOR_GEARBOX_RATIO * BELT_RATIO
 # Maximum RPM of motor is 1800rpm.
 MAX_MOTOR_RPM = 1800
 
-# Input voltage offset. The value being read it is not always zero 
+# Input voltage offset. The value being read it is not always zero
 # when the pendulum is centred, so change this value as needed.
 PENDULUM_OFFSET_VOLTAGE = 0.0
 
 def convert_voltage_to_values(voltage_v):
-    """ Converts the input voltage into an angle and then into a 
-    co-efficent of friction value. 
+    """ Converts the input voltage into an angle and then into a
+    co-efficent of friction value.
     """
     # Convert reading into a tuple of values.
     corrected_voltage_v = voltage_v + PENDULUM_OFFSET_VOLTAGE
@@ -142,7 +142,7 @@ class Encoder:
             # Convert delta time to RPM.
             new_rpm = (1.0 / delta.total_seconds()) * 60
             # print("new_rpm {}".format(new_rpm))
-            # Some values produced are completely wrong, possibly caused 
+            # Some values produced are completely wrong, possibly caused
             # by electrical noise.
             if new_rpm <= MAX_MOTOR_RPM:
                 self._rpm = new_rpm
