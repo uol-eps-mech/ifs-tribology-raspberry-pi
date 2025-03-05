@@ -4,7 +4,7 @@ How to setup the Raspberry Pi 4.
 
 ## Use the pre-built image
 
-This is by far the quickest way.  The current image has all (except Eduroam) of the below ready to go an install in about 5 minutes.  Andy Blight knows where the images are (on his PC and backed up on the IT provided Globus file store).  The current image is `tribology_rpi_20230120.img.gz`.  The image file can be installed as follows.
+This is by far the quickest way.  The current image has all (except Eduroam) of the below ready to go an install in about 5 minutes.  Andy Blight knows where the images are (on his PC and backed up on the IT provided Globus file store).  The current image is `tribology_rpi_20250305.img.gz`.  The image file can be installed as follows.
 
 ### Pre-requisites
 
@@ -102,6 +102,18 @@ sudo daqhats_read_eeproms
 ```
 
 If you are using new DAQ hats, you may need to update the firmware on them.  Instructions for this can be found in the file `~/daqhats/README`.
+
+__NOTE: As of 5 March 2025, thermocouple data logger app no longer builds due to problems with various libraries not being available.  Needs to be fixed at some point.__
+
+To build the thermocouple data logger app:
+
+```bash
+sudo apt install -y libgtkdatabox-dev
+cd ~/daqhats/examples/c/mcc134/data_logger/logger
+make
+```
+
+This builds a new app called `logger`.  Run it and check that it start up correctly and that thermocouples return the correct values when plugged into the sockets.
 
 ## Clone this repo
 

@@ -32,7 +32,25 @@ You will also need to get the data off the data logger manually.  To do this, yo
 
 ### Thermocouple software
 
+The MCC DAQ hats software has a nice data logger utility for the thermocouple hat.  To run it:
 
+```bash
+cd ~/daqhats/examples/c/mcc134/data_logger/logger/
+./logger
+```
+
+A nice looking program starts up.
+
+![Data logger for thermocouple](images/thermocouple_logger.png)
+
+Channels 0 and 1 are connected to the 2 green thermocouple connectors on the data logger box.
+
+* Select the channel that you want to use.
+* Set the `TC Type` to `K`.
+* Adjust the `Acquisition Settings` as required.
+* Select the log file to write to.  The name of the default file is shown at the bottom of the app, `.../dada.csv`.
+* When you are ready to start recording, press `Start`.  The most recent data will be shown on the graph on the app and all the data will be written to the chosen `.csv` file.
+* Press the `Stop` button when done (the start button changes to a stop button).
 
 ### Pendulum Tribometer software
 
