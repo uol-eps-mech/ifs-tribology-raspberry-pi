@@ -34,7 +34,7 @@ These instructions were run on Kubuntu 24.04LTS but should work on a Windows PC 
 
 This is the hard way!
 
-The version we are using is the Raspberry Pi OS, Debian Bullseye (32 bit) release installed using the instructions here: <https://www.raspberrypi.com/software/>. To summarise:
+The version we are using is the Raspberry Pi OS, Debian Trixie (64 bit) release (2026-04-13) installed using the instructions here: <https://www.raspberrypi.com/software/>. To summarise:
 
 1. Install the Raspberry Pi Imager tool.
 2. Insert SD Card.  I used this [SD card](https://www.amazon.co.uk/SanDisk-microSDHC-Adapter-Performance-SDSQUA4-032G-GN6MA/dp/B08GY9NYRM/).  Gold ones like [this](https://www.amazon.co.uk/SanDisk-Extreme-microSDHC-Adapter-Performance/dp/B06XWMQ81P/) are better!
@@ -46,55 +46,22 @@ The version we are using is the Raspberry Pi OS, Debian Bullseye (32 bit) releas
 
 ## Set up the new OS
 
-Insert the SD card into the Raspberry Pi, make sure a keyboard, mouse and and HDMI monitor is connected, then apply power.  After a while, you will get a nice picture of a sunset and a little dialog box that tells you to set up a a few things.  This is what I did:
+Insert the SD card into the Raspberry Pi, make sure a keyboard, mouse and and HDMI monitor is connected, then apply power.  After a while, you will be prompted to create a user and password.
 
-1. Press `Next`.
-2. Set Country.  The default options are for the UK so I left them alone. Press `Next`.
-3. Enter a new user name (pi) and password, then press `Next`.
-4. Set the screen black bars option as appropriate. Press `Next`.
-5. Connect to Wi-Fi.  If you are at the University and connecting to Eduroam, press `Skip`.  Otherwise, select the Wi-Fi and press `Next`.  Then enter the Wi-Fi password and press `Next`.
-6. Update Software.  Press `Skip` if no Wi-Fi, or `Next` to update.  The software update will take an hour or so, so I prefer to skip this step and do the update later.
-7. Press `Restart`.
+User: `logger`
+Password: `tribology`
 
-After restarting, we need to start customising our Pi.
+Then select language and keyboard layout, British English for both, and then set up wi-fi to connect to the local RR lab network.
 
-1. Add a few useful tools.
-   1. Connect to the network.  Eduroam can be used if you know how but it is quicker and easier to hotspot to your phone (assuming you have a good data allowance).
-   2. Execute these commands:
-
-       ```bash
-       cd
-       git clone https://github.com/andyblight/bash_scripts.git
-       ```
-
-       A new directory will be created called `bash_scripts`.
-   3. Now run the following commands:
-
-       ```bash
-       cd ~/bash_scripts
-       ./install.sh ubuntu22.04lts
-       cd ubuntu22.04lts/desktop-installs/
-       ./install-git-tools.sh
-       ```
-
-     This will install some tools that I find useful when working on Debian/Ubuntu PCs and the Raspberry Pi.  The tools are:
-
-     * `vim` a command line text editor.
-     * `gitk` a viewer for the history of a `git` repo.
-     * Some custom `Bash` enhancements in `~/.bash_aliases`.
-     * Some `git` aliases in `~/.gitconfig`.
-     * A nice system update script.
-   4. Start a new terminal shell to pick up the enhancements from the `Bash` aliases.
-
-2. Now that most of the setup has been done, it is time to do that update that you've been putting off.  Time to run the system update script.  In a terminal windows on the RPi, run `upgrade.sh` and let it go!  A full update may take up to an hour, so be prepared to wait.
+Once the main screen comes up, open a terminal shell and run `sudo raspi-config`, enable `SSH` and exit.  Verify that you can access the RPi from you PC using SSH.
 
 ## Setup software for the MCC DAQ cards
 
-This is fairly simple.  Clone the MCC-DAQ hats repo and build the code.
+This is fairly simple.  Clone the local version of the MCC-DAQ hats repo (it has some fixes on it for GTK 3.16 and later) and build the code.
 
 ```bash
 cd ~
-git clone https://github.com/mccdaq/daqhats.git
+git clone git@github.com:uol-eps-mech/daqhats.git
 cd ~/daqhats
 sudo ./install.sh
 sudo pip install -break-system-packages daqhats
@@ -103,17 +70,38 @@ sudo daqhats_read_eeproms
 
 If you are using new DAQ hats, you may need to update the firmware on them.  Instructions for this can be found in the file `~/daqhats/README`.
 
-__NOTE: As of 5 March 2025, thermocouple data logger app no longer builds due to problems with various libraries not being available.  Needs to be fixed at some point.__
+To build the thermocouple data logger app (from the file `examples/c/mcc134/data_logger/README.md`)
 
-To build the thermocouple data logger app:
+  ```sh
+  sudo apt install libgtk-3-dev at-spi2-core autoconf libtool
+  ```
 
-```bash
-sudo apt install -y libgtkdatabox-dev
-cd ~/daqhats/examples/c/mcc134/data_logger/logger
-make
-```
+Install **GTKDatabox**:
 
-This builds a new app called `logger`.  Run it and check that it start up correctly and that thermocouples return the correct values when plugged into the sockets.
+  ```sh
+  cd ~
+  git clone https://github.com/erikd/gtkdatabox.git
+  cd gtkdatabox
+  ./autogen.sh
+  ./configure
+  sudo make install
+  ```
+
+Run ldconfig after installing the dependencies.
+
+  ```sh
+  sudo ldconfig
+  ```
+
+To run the example, enter the following commands:
+
+  ```sh
+    cd ~/daqhats/examples/c/mcc134/data_logger/logger
+    make
+    ./logger
+  ```
+
+Check that it start up correctly and that thermocouples return the correct values when plugged into the sockets.
 
 ## Clone this repo
 
